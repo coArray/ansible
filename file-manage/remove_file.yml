@@ -1,0 +1,10 @@
+---
+- name: Use the file module to remove a file
+  hosts: all
+  remote_user: devops
+  tasks:
+    - name: Remove a file from managed hosts
+      file:
+        path: /home/devops/users.txt
+        state: absent
+

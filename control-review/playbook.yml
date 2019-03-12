@@ -1,0 +1,67 @@
+---
+- name: Playbook Control Lab
+  hosts: webservers
+  vars_files: vars.yml
+  tasks:
+    #Fail Fast Message
+    - name: Setup Database tasks on supported hosts with min RAM
+      fail:
+        msg: "Requirement not meet"
+      when:
+        ansible_memtotal_mb*1024*1024 < min_ram_megabytes*1000000 or
+        ansible_distribution != supported_distros
+
+    #Install all Packages
+    - name: Ensure required packages are present
+      package:
+        name: "{{ item }}"
+        state: present
+      loop: "{{ packages }}"
+
+    #Enable and start services
+    - name: Enable and start services
+      service:
+        name: "{{ item }}"
+        state: started
+        enabled: yes
+      loop: "{{ services }}"
+
+    #Block of config tasks
+    - block:
+        - name: Create SSL cert directory
+          file:
+            path: "{{ ssl_cert_dir }}"
+            state: directory
+        
+        - name: Copy config files
+          copy:
+            src: "{{ item.src }}"
+            dest: "{{ item.dest }}"
+          loop: "{{ web_config_files }}"
+          notify: restart web service
+    
+      rescue:
+        - name: Configuration Error Message
+          debug:
+            msg: >
+              One or more of the configuration
+              changes failed, but the web service 
+              is still active.
+
+    #Configure the firewall
+    - name: ensure web server ports are open
+      firewalld:
+        service: "{{ item }}"
+        immediate: true
+        permanent: true
+        state: enabled
+      loop:
+        - http
+        - https
+
+  #Add handlers
+  handlers:
+    - name: restart web service
+      service:
+        name: "{{ web_service }}"
+        state: restarted
