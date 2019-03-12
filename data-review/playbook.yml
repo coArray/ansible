@@ -1,0 +1,70 @@
+---
+- name: Install services
+  hosts: webserver
+  vars_files:
+    - vars/secret.yml
+  tasks:
+    - name: Verify the packages
+      yum:
+        name: 
+          - "{{ firewall_pkg }}"
+          - "{{ web_pkg }}"
+          - "{{ ssl_pkg }}"
+          - "{{ python_pkg }}"
+        state: latest
+
+    - name: Copy file
+      copy:
+        src: "{{ httpdconf_src }}"
+        dest: "{{ httpdconf_file }}"
+        owner: root
+        mode: 0644
+
+    - name: Create file
+      file:
+        path: "{{ secrets_dir }}"
+        state: directory
+        owner: apache
+        group: apache
+        mode: 0500
+
+    - name: Create password file
+      htpasswd:
+        path: "{{ secrets_file }}"
+        name: "{{ web_user }}"
+        password: "{{ web_pass }}"
+        owner: apache
+        group: apache
+        mode: 0400
+
+    - name: Copy htaccess
+      copy:
+        src: "{{ htaccess_src }}"
+        dest: "{{ web_root }}/.htaccess"
+        owner: apache
+        group: apache
+        mode: 0400
+
+    - name: Copy index
+      copy:
+        content: "{{ ansible_facts['fqdn'] }} ({{ ansible_facts['default_ipv4']['address']  }}) has been customized by Ansible.\n"
+        dest: "{{ web_root }}/index.html"
+
+    - name: Open firewall
+      firewalld:
+        service: https
+        state: enabled
+        permanent: yes
+        immediate: yes
+
+    - name: enabled and start
+      service:
+        name: "{{ web_svc }}"
+        state: started
+        enabled: yes
+
+    - name: restart firewall
+      service:
+        name: firewalld
+        state: restarted
+        enabled: yes

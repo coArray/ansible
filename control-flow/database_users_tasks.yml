@@ -1,0 +1,18 @@
+- name: Ensure database permission groups exist
+  group:
+    name: "{{ item }}"
+    state: present
+  #Add a loop
+  loop: "{{ host_permission_groups }}"
+
+- name: Ensure Database Users exist
+  user:
+    name: "{{ item.username }}"
+    groups: "{{ item.role }}"
+    append: yes
+    state: present
+  #Add a loop
+  loop: "{{ user_list }}"
+  #Add a when
+  when: item.role in host_permission_groups
+
