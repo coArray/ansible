@@ -1,0 +1,12 @@
+---
+# defaults file for myfirewall
+#
+#By default, no firewall services are enabled
+#firewall_services: []
+#
+#To enable, for example, FTP and HTTP services in firewalld,
+# use the following definition for "firewall_services"
+# firewall_services:
+#   - http
+#   - ftp
+firewall_services: []

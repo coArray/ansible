@@ -1,0 +1,16 @@
+---
+- name: Install and configure web service
+  hosts: server*.lab.example.com
+  serial: 2
+  tasks:
+    - name: Installing httpd and Tuning configuration installed
+      import_tasks: tasks/web_tasks.yml
+
+    - name: Installing firewalld, start firewall and open port
+      import_tasks: tasks/firewall_tasks.yml
+
+  handlers:
+    - name: restart httpd
+      service:
+        name: httpd
+        state: restarted
