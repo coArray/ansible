@@ -1,7 +1,9 @@
 ---
 - name: Configure Dev Web Server
   hosts: dev_webserver
-
+  force_handlers: yes
+  roles:
+    - apache.developer_configs
   pre_tasks:
     - name: Apply SELinux role
       block:
@@ -19,6 +21,3 @@
           include_role:
             name: rhel-system-roles.selinux
 
-
-  roles:
-    - apache.developer_configs

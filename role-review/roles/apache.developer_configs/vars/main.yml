@@ -1,6 +1,2 @@
 ---
-# vars file for apache
-
-
-prod_document_root: /var/www/html
-
+# vars file for apache.developer_config
